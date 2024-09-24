@@ -42,6 +42,29 @@ def create_lookup(base_url, cribl_auth_token, create_config, worker_group=None, 
     except Exception as e:
         raise Exception("General exception raised while attempting to create lookup: %s " % str(e))
 
+def update_lookup(base_url, cribl_auth_token, update_config, lookup_id, worker_group=None, fleet=None, verify=True,
+                  use_session=False):
+    headers = {"Content-type": "application/json",
+               "Authorization": "Bearer " + cribl_auth_token}
+    payload = update_config
+
+    try:
+        if worker_group is not None and fleet is None:
+            group = worker_group
+        elif fleet is not None and worker_group is None:
+            group = fleet
+        else:
+            raise Exception("Worker group and fleet were both set; operation can be performed on only one worker group"
+                            " or fleet at a time.")
+        if group is not None:
+            return patch(base_url + "/m/" + group + "/system/lookups/" + lookup_id,
+                        headers=headers, payload=payload, verify=verify, use_session=use_session)
+        else:
+            return patch(base_url + "/system/lookups/" + lookup_id,
+                        headers=headers, payload=payload, verify=verify, use_session=use_session)
+    except Exception as e:
+        raise Exception("General exception raised while attempting to update lookup: %s " % str(e))
+
 
 def export_lookup_file(base_url, cribl_auth_token, lookup_filename, save_to_directory=".",
                        worker_group=None, fleet=None, verify=True, use_session=False):
